@@ -1,7 +1,9 @@
 const mongoose = require("mongoose");
+const { MONGO_DB_URI } = require("./constants");
 const connectDB = async () => {
   try {
-    await mongoose.connect("mongodb://127.0.0.1:27017/iBazaar");
+    console.log(MONGO_DB_URI);
+    await mongoose.connect(MONGO_DB_URI);
     console.log("database connected");
   } catch (error) {
     console.log("database connection error", error);

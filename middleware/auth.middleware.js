@@ -1,9 +1,9 @@
-// const { JWT_SECRET } = require("../config/constants");
+const { JWT_SECRET } = require("../config/constants");
 const jwt = require("jsonwebtoken");
 const checkAuth = (role) => {
   return (req, res, next) => {
     try {
-      const decoded = jwt.verify(req.headers.token, "secret");
+      const decoded = jwt.verify(req.headers.token, JWT_SECRET);
       req.authUser = decoded;
       console.log(decoded);
       if (role && !req.authUser.roles.includes(role)) {
@@ -24,7 +24,7 @@ const checkAuth = (role) => {
 
 const checkAuthOld = (req, res, next) => {
   try {
-    const decoded = jwt.verify(req.headers.token, "secret");
+    const decoded = jwt.verify(req.headers.token, JWT_SECRET);
     req.authUser = decoded;
     next();
   } catch (err) {
@@ -37,7 +37,7 @@ const checkAuthOld = (req, res, next) => {
 
 const checkAuthAdmin = (req, res, next) => {
   try {
-    const decoded = jwt.verify(req.headers.token, "secret");
+    const decoded = jwt.verify(req.headers.token, JWT_SECRET);
     req.authUser = decoded;
     if (req.authUser.roles.include("Admin")) {
       res.status(401).json({
@@ -55,4 +55,6 @@ const checkAuthAdmin = (req, res, next) => {
 };
 module.exports = {
   checkAuth,
+  checkAuthOld,
+  checkAuthAdmin,
 };
