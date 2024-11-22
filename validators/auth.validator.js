@@ -1,6 +1,7 @@
 const { body } = require("express-validator");
 const { validate } = require("../middleware/validator.middleware");
 const signUpValidator = [
+  body("name").isString().notEmpty(),
   body("email").isEmail(),
   body("password").isStrongPassword(),
   validate,

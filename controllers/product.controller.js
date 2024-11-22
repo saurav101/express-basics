@@ -1,20 +1,37 @@
 const Product = require("../models/Product");
 const jwt = require("jsonwebtoken");
+const Order = require("../models/order");
 const getProducts = async (req, res) => {
   const { limit, page, search } = req.query;
+  const filter = {};
   const sort = {};
   if (req.query.priceOrder) {
     sort.price = req.query.priceOrder;
   }
 
-  const products = await Product.find()
-    .sort(sort)
-    .limit(limit)
-    .skip((page - 1) * limit)
-    .find({ name: search });
-  res.json({
-    data: products,
-  });
+  if (req.query.minPrice && req.query.maxPrice) {
+    filter.price = {
+      $lte: req.query.minPrice,
+      $gte: req.query.maxPrice,
+    };
+  }
+  try {
+    const products = await Product.find(filter)
+      .sort(sort)
+      .limit(limit)
+      .skip((page - 1) * limit)
+      .find({ name: search });
+    const total = await Product.countDocuments(filter); // Count total products
+    res.json({
+      total,
+      data: products,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Error fetching products",
+      error: error.message,
+    });
+  }
 };
 // const addProducts = async (req, res) => {
 //   console.log(req.headers.token);
@@ -68,9 +85,10 @@ const getProducts = async (req, res) => {
 // };
 
 const addProducts = async (req, res) => {
-  console.log(req.authUser, req.test);
+  console.log(req.file);
   await Product.create({
     name: req.body.name,
+    image: req.file.filename,
     price: req.body.price,
     quantity: req.body.quantity,
     user: req.authUser._id,
@@ -106,6 +124,23 @@ const getProductsById = async (req, res) => {
     data: product,
   });
 };
+const createOrder = async (req, res) => {
+  const { products } = req.body;
+  let total = 0;
+  for (let product of products) {
+    const dbProduct = await Product.findOne({ _id: product._id });
+    product.price = dbProduct.price;
+    total += product.quantity * product.price;
+  }
+  await Order.create({
+    user: req.authUser._id,
+    products,
+    total,
+  });
+  res.json({
+    message: "Order placed successfully",
+  });
+};
 
 module.exports = {
   getProducts,
@@ -113,4 +148,5 @@ module.exports = {
   updateProducts,
   deleteProducts,
   getProductsById,
+  createOrder,
 };
