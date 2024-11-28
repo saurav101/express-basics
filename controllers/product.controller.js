@@ -2,25 +2,36 @@ const Product = require("../models/Product");
 const jwt = require("jsonwebtoken");
 const Order = require("../models/order");
 const getProducts = async (req, res) => {
-  const { limit, page, search } = req.query;
+  const {
+    limit = 10,
+    page = 1,
+    search = "",
+    priceOrder,
+    minPrice,
+    maxPrice,
+  } = req.query;
+
   const filter = {};
   const sort = {};
-  if (req.query.priceOrder) {
-    sort.price = req.query.priceOrder;
+
+  if (priceOrder) {
+    sort.price = priceOrder;
   }
 
-  if (req.query.minPrice && req.query.maxPrice) {
+  if (minPrice && maxPrice) {
     filter.price = {
-      $lte: req.query.minPrice,
-      $gte: req.query.maxPrice,
+      $lte: minPrice,
+      $gte: maxPrice,
     };
+  }
+  if (search) {
+    filter.name = new RegExp(search, "i"); // Case-insensitive partial matching
   }
   try {
     const products = await Product.find(filter)
       .sort(sort)
       .limit(limit)
-      .skip((page - 1) * limit)
-      .find({ name: search });
+      .skip((page - 1) * limit);
     const total = await Product.countDocuments(filter); // Count total products
     res.json({
       total,

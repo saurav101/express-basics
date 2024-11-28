@@ -10,8 +10,8 @@ const port = 3001;
 
 connectDB();
 
-app.use("/api/products", productRoutes);
 app.use(express.json());
+app.use("/api/products", productRoutes);
 app.use("/api/auth", authRoutes);
 
 app.use((err, req, res, next) => {
