@@ -55,6 +55,13 @@ const signIn = async (req, res) => {
           expiresIn: "10D",
         }
       );
+      const expiresAt = new Date();
+      expiresAt.setDate(expiresAt.getDate() + 10);
+
+      res.cookie("token", token, {
+        httpOnly: true,
+        expires: expiresAt,
+      });
 
       delete user.password;
 
