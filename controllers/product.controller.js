@@ -103,6 +103,7 @@ const addProducts = async (req, res) => {
     price: req.body.price,
     quantity: req.body.quantity,
     user: req.authUser._id,
+    featured: req.body.featured,
   });
   res.json({
     message: "product added successfully",
@@ -135,6 +136,22 @@ const getProductsById = async (req, res) => {
     data: product,
   });
 };
+
+const getFeaturedProducts = async (req, res) => {
+  const featuredProducts = await Product.find({ featured: true }).limit(4);
+  res.json({
+    data: featuredProducts,
+  });
+};
+const getLatestProducts = async (req, res) => {
+  const latestProducts = await Product.find()
+    .sort({ createdAt: "desc" })
+    .limit(4);
+  res.json({
+    data: latestProducts,
+  });
+};
+
 const createOrder = async (req, res) => {
   const { products } = req.body;
   let total = 0;
@@ -159,5 +176,7 @@ module.exports = {
   updateProducts,
   deleteProducts,
   getProductsById,
+  getFeaturedProducts,
+  getLatestProducts,
   createOrder,
 };

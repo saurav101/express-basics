@@ -5,6 +5,8 @@ const productSchema = new mongoose.Schema({
   price: Number,
   quantity: Number,
   image: String,
+  featured: Boolean,
+  latest: Boolean,
   user: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",

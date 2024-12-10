@@ -21,8 +21,12 @@ const {
   deleteProducts,
   getProductsById,
   createOrder,
+  getFeaturedProducts,
+  getLatestProducts,
 } = require("../controllers/product.controller");
 router.get("/", getProducts);
+router.get("/featured", getFeaturedProducts);
+router.get("/latest", getLatestProducts);
 router.post("/", checkAuth("Admin"), upload.single("image"), addProducts);
 router.patch("/:id", checkAuth("Admin"), updateProducts);
 router.delete("/:id", checkAuth("Super Admin"), deleteProducts);

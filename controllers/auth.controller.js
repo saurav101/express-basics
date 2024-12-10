@@ -16,6 +16,7 @@ const signUp = async (req, res) => {
     const salt = bcrypt.genSaltSync(10);
     const hashedPassword = bcrypt.hashSync(req.body.password, salt);
     await User.create({
+      name: req.body.name,
       email: req.body.email,
       password: hashedPassword,
     });
@@ -54,9 +55,13 @@ const signIn = async (req, res) => {
           expiresIn: "10D",
         }
       );
+
+      delete user.password;
+
       res.status(200).json({
         message: "signed in successfully",
         token,
+        data: user,
       });
       return;
     }
