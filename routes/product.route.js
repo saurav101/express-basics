@@ -28,7 +28,12 @@ router.get("/", getProducts);
 router.get("/featured", getFeaturedProducts);
 router.get("/latest", getLatestProducts);
 router.post("/", checkAuth("Admin"), upload.single("image"), addProducts);
-router.patch("/:id", checkAuth("Admin"), updateProducts);
+router.patch(
+  "/:id",
+  checkAuth("Admin"),
+  upload.single("image"),
+  updateProducts
+);
 router.delete("/:id", checkAuth("Admin"), deleteProducts);
 router.get("/:id", getProductsById);
 router.post("/order", checkAuth(), createOrder);

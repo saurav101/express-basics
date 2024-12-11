@@ -106,33 +106,44 @@ const addProducts = async (req, res) => {
     featured: req.body.featured,
   });
   res.json({
-    message: "product added successfully",
+    message: "Product added successfully!",
   });
 };
 
 const updateProducts = async (req, res) => {
-  await Product.updateOne({ _id: req.params.id }, req.body);
+  const product = {
+    name: req.body.name,
+    price: req.body.price,
+    user: req.authUser._id,
+    featured: req.body.featured,
+  };
+
+  if (req?.file?.filename) {
+    product.image = req.file.filename;
+  }
+
+  await Product.updateOne({ _id: req.params.id }, product);
   res.json({
-    message: "products updated successsfully!",
+    message: "Product updated successsfully!",
   });
 };
 
 const deleteProducts = async (req, res) => {
   await Product.deleteOne({ _id: req.params.id });
   res.json({
-    message: "product deleted successfully",
+    message: "Product deleted successfully!",
   });
 };
 const getProductsById = async (req, res) => {
   const product = await Product.findById({ _id: req.params.id });
   if (!product) {
     res.json({
-      message: "product not found",
+      message: "Product not found!!",
     });
     return;
   }
   res.json({
-    message: "product fetched",
+    message: "Product fetched successfully!",
     data: product,
   });
 };
