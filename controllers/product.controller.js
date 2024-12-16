@@ -1,6 +1,36 @@
+const { error } = require("console");
 const Product = require("../models/Product");
-const jwt = require("jsonwebtoken");
+// const jwt = require("jsonwebtoken");
 const Order = require("../models/order");
+const fs = require("fs");
+const stripe = require("stripe")(
+  "sk_test_51QVUNBFYZdoxzDjJ04igkyJEXynllW96i5VUMfeelZ9skJnad4URiYCUxSL8ty1aTIa5nff2Vi1M02tZn5Nqcx2w00Sp0CZNzy"
+);
+const getOrders = async (req, res) => {
+  const { limit, page, status } = req.query;
+  const filter = {
+    user: req.authUser._id,
+  };
+  if (status) {
+    filter.status = status;
+  }
+  try {
+    const orders = await Order.find(filter)
+      .limit(limit)
+      .skip((page - 1) * limit);
+    const total = await Order.countDocuments(filter); // Count total products
+    res.json({
+      total,
+      data: orders,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Error fetching orders",
+      error: error.message,
+    });
+  }
+};
+
 const getProducts = async (req, res) => {
   const {
     limit = 10,
@@ -166,21 +196,51 @@ const getLatestProducts = async (req, res) => {
 const createOrder = async (req, res) => {
   const { products } = req.body;
   let total = 0;
+  const line_items = [];
   for (let product of products) {
     const dbProduct = await Product.findOne({ _id: product._id });
     product.price = dbProduct.price;
     total += product.quantity * product.price;
+    const price = await stripe.prices.create({
+      currency: "usd",
+      unit_amount: product.price * 100,
+      product_data: {
+        name: dbProduct.name,
+      },
+    });
+    line_items.push({
+      price: price.id,
+      quantity: product.quantity,
+    });
   }
-  await Order.create({
+  // await Order.create({
+  //   user: req.authUser._id,
+  //   products,
+  //   total,
+  // });
+  const order = new Order({
     user: req.authUser._id,
     products,
     total,
   });
+
+  const { _id: orderId } = await order.save();
+
+  const session = await stripe.checkout.sessions.create({
+    success_url: "http://localhost:5173/success",
+    line_items,
+    mode: "payment",
+    metadata: {
+      orderId: orderId.toString(),
+    },
+  });
+  console.log(session);
+
   res.json({
     message: "Order placed successfully",
+    url: session.url,
   });
 };
-
 module.exports = {
   getProducts,
   addProducts,
@@ -190,4 +250,5 @@ module.exports = {
   getFeaturedProducts,
   getLatestProducts,
   createOrder,
+  getOrders,
 };

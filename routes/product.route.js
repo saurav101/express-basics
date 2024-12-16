@@ -23,6 +23,7 @@ const {
   createOrder,
   getFeaturedProducts,
   getLatestProducts,
+  getOrders,
 } = require("../controllers/product.controller");
 router.get("/", getProducts);
 router.get("/featured", getFeaturedProducts);
@@ -35,6 +36,7 @@ router.patch(
   updateProducts
 );
 router.delete("/:id", checkAuth("Admin"), deleteProducts);
+router.get("/orders", checkAuth(), getOrders);
 router.get("/:id", getProductsById);
 router.post("/order", checkAuth(), createOrder);
 
